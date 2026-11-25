@@ -28,3 +28,13 @@
 
 ## 🛠️ 如何运行
 确保已安装带有 CUDA 支持的 CuPy (`pip install cupy-cuda12x`)，在对应目录下直接运行 Python 脚本即可。
+## 🚀 高阶挑战：大模型核心算子 FlashAttention (Triton 实现)
+
+利用 Triton 实现了带有 Online Softmax 机制的融合 Scaled Dot-Product Attention 算子。
+通过将矩阵乘法、缩放、Softmax 融合在单个 Kernel 中，并在 SRAM 中增量更新，彻底消除了 \(N \times N\) 中间矩阵的显存开销。
+
+### ⚡ 性能对比 (Batch=4, Head=8, SeqLen=1024, Dim=64, FP16)
+| 算子实现版本 | 耗时 | 优化说明 |
+| :--- | :--- | :--- |
+| PyTorch 官方 (`scaled_dot_product_attention`) | 0.573 ms | 原生实现 |
+| **手写 Triton 融合 Attention** | **0.477 ms** | **Online Softmax，消除中间显存读写，性能反超官方库！** |
